@@ -6,7 +6,10 @@
   "postStartCommand": "script/bootstrap",
   "containerEnv": {
     "PYTHONASYNCIODEBUG": "1"
-  },
+  }, //
+  "mounts": [
+    "source=/C:/Users/MadihaGul/source/repos/HomeAssistant/frontend,target=/workspaces/frontend,type=bind,consistency=cached"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
