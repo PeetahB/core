@@ -220,8 +220,7 @@ async def test_satellite_pipeline(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         context,
         event_callback,
-        stt_metadata,
-        stt_stream,
+        audio_data,  # Single object with stt_stream, metadata, etc.
         **kwargs,
     ) -> None:
         nonlocal pipeline_kwargs, pipeline_event_callback
@@ -229,7 +228,7 @@ async def test_satellite_pipeline(hass: HomeAssistant) -> None:
         pipeline_event_callback = event_callback
 
         run_pipeline_called.set()
-        async for chunk in stt_stream:
+        async for chunk in audio_data.stt_stream:
             if chunk:
                 audio_chunk_received.set()
                 break
@@ -800,15 +799,14 @@ async def test_pipeline_changed(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         context,
         event_callback,
-        stt_metadata,
-        stt_stream,
+        audio_data,  # Single object with stt_stream, metadata, etc.
         **kwargs,
     ) -> None:
         nonlocal pipeline_event_callback
         pipeline_event_callback = event_callback
 
         run_pipeline_called.set()
-        async for _chunk in stt_stream:
+        async for _chunk in audio_data.stt_stream:
             pass
 
         pipeline_stopped.set()
@@ -874,15 +872,14 @@ async def test_audio_settings_changed(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         context,
         event_callback,
-        stt_metadata,
-        stt_stream,
+        audio_data,  # Single object with stt_stream, metadata, etc.
         **kwargs,
     ) -> None:
         nonlocal pipeline_event_callback
         pipeline_event_callback = event_callback
 
         run_pipeline_called.set()
-        async for _chunk in stt_stream:
+        async for _chunk in audio_data.stt_stream:
             pass
 
         pipeline_stopped.set()
@@ -1010,15 +1007,14 @@ async def test_client_stops_pipeline(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         context,
         event_callback,
-        stt_metadata,
-        stt_stream,
+        audio_data,  # Single object with stt_stream, metadata, etc.
         **kwargs,
     ) -> None:
         nonlocal pipeline_event_callback
         pipeline_event_callback = event_callback
 
         run_pipeline_called.set()
-        async for _chunk in stt_stream:
+        async for _chunk in audio_data.stt_stream:
             pass
 
         pipeline_stopped.set()
@@ -1309,8 +1305,7 @@ async def test_satellite_conversation_id(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         context,
         event_callback,
-        stt_metadata,
-        stt_stream,
+        audio_data,  # Single object with stt_stream, metadata, etc.
         **kwargs,
     ) -> None:
         nonlocal pipeline_kwargs, pipeline_event_callback
