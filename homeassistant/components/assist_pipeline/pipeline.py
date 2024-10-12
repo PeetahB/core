@@ -1793,6 +1793,11 @@ class PipelineStorageCollectionWebsocket(
             )
             return
         connection.send_result(msg["id"])
+    
+    def __getitem__(self, index: int) -> PipelineStorageCollection:
+        """Retrieve a specific pipeline storage collection by index."""
+        return self.storage_collection[index]  # Accessing the storage collection items
+
 
 
 class PipelineRuns:
