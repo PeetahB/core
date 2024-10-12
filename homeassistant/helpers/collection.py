@@ -250,6 +250,10 @@ class StorageCollection[_ItemT, _StoreT: SerializedStorageCollection](
         super().__init__(id_manager)
         self.store = store
 
+    def __getitem__(self, index: int) -> _ItemT:
+        """Retrieve an item by index."""
+        return self.items[index]  # Access items by index
+
     @staticmethod
     def create_entity(
         entity_class: type[CollectionEntity], config: ConfigType
