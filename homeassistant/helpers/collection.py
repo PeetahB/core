@@ -17,6 +17,8 @@ from typing_extensions import TypeVar
 import voluptuous as vol
 from voluptuous.humanize import humanize_error
 
+
+
 from homeassistant.components import websocket_api
 from homeassistant.const import CONF_ID
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -249,6 +251,10 @@ class StorageCollection[_ItemT, _StoreT: SerializedStorageCollection](
         """Initialize the storage collection."""
         super().__init__(id_manager)
         self.store = store
+
+    def __getitem__(self, index: int) -> _ItemT:
+        """Retrieve an item by index."""
+        return self.items[index]  # Access items by index
 
     @staticmethod
     def create_entity(
@@ -747,6 +753,13 @@ class StorageCollectionWebsocket[_StorageCollectionT: StorageCollection]:
             )
 
         connection.send_result(msg["id"])
+
+    def __getitem__(self, item_id: str) -> Any:
+        """Get an item from the storage collection by its ID."""
+        item = self.storage_collection.get_item(item_id)  # Assuming get_item() is defined in StorageCollection
+        if item is None:
+            raise ItemNotFound(f"Item with ID {item_id} not found")
+        return item
 
 
 class DictStorageCollectionWebsocket(StorageCollectionWebsocket[DictStorageCollection]):
