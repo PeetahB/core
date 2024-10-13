@@ -80,14 +80,10 @@ class CommandLineAuthProvider(AuthProvider):
             _LOGGER.error("Error while authenticating %r: %s", username, err)
             raise InvalidAuthError from err
 
-        if process.returncode != 0:
-            _LOGGER.error(
-                "User %r failed to authenticate, command exited with code %d",
-                username,
-                process.returncode,
-            )
-            raise InvalidAuthError
+        _validate_authentication_process(process, username)
+        self._extract_metadata(username, stdout)
 
+    def _extract_metadata(self, username: str, stdout: bytes) -> None:
         if self.config[CONF_META]:
             meta: dict[str, str] = {}
             for _line in stdout.splitlines():
@@ -165,3 +161,13 @@ class CommandLineLoginFlow(LoginFlow):
             ),
             errors=errors,
         )
+
+
+def _validate_authentication_process(process: Any, username: str) -> None:
+    if process.returncode != 0:
+        _LOGGER.error(
+            "User %r failed to authenticate, command exited with code %d",
+            username,
+            process.returncode,
+        )
+        raise InvalidAuthError
