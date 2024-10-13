@@ -5,9 +5,11 @@ from collections.abc import AsyncGenerator
 import io
 import logging
 import time
-from typing import Final
+from typing import Final,Any
 from uuid import uuid4
 import wave
+from collections.abc import AsyncIterable
+from dataclasses import dataclass
 
 from wyoming.asr import Transcribe, Transcript
 from wyoming.audio import AudioChunk, AudioChunkConverter, AudioStart, AudioStop
@@ -32,6 +34,19 @@ from homeassistant.core import Context, HomeAssistant, callback
 from .const import DOMAIN
 from .data import WyomingService
 from .devices import SatelliteDevice
+
+from homeassistant.components.assist_pipeline.pipeline import (
+    AudioSettings,
+    WakeWordSettings,
+)
+
+@dataclass
+class AudioData:
+    stt_metadata: stt.SpeechMetadata
+    stt_stream: AsyncIterable[bytes]
+    tts_audio_output: str | dict[str, Any] | None = None
+    wake_word_settings: WakeWordSettings | None = None
+    audio_settings: AudioSettings | None = None
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -387,13 +402,9 @@ class WyomingSatellite:
 
         self._is_pipeline_running = True
         self._pipeline_ended_event.clear()
-        self.config_entry.async_create_background_task(
-            self.hass,
-            assist_pipeline.async_pipeline_from_audio_stream(
-                self.hass,
-                context=Context(),
-                event_callback=self._event_callback,
-                stt_metadata=stt.SpeechMetadata(
+
+        audio_data_instance = AudioData(
+            stt_metadata=stt.SpeechMetadata(
                     language=pipeline.language,
                     format=stt.AudioFormats.WAV,
                     codec=stt.AudioCodecs.PCM,
@@ -401,19 +412,28 @@ class WyomingSatellite:
                     sample_rate=stt.AudioSampleRates.SAMPLERATE_16000,
                     channel=stt.AudioChannels.CHANNEL_MONO,
                 ),
-                stt_stream=stt_stream,
+            stt_stream=stt_stream,
+            tts_audio_output="wav",
+            audio_settings=assist_pipeline.AudioSettings(
+                noise_suppression_level=self.device.noise_suppression_level,
+                auto_gain_dbfs=self.device.auto_gain,
+                volume_multiplier=self.device.volume_multiplier,
+                silence_seconds=VadSensitivity.to_seconds(
+                    self.device.vad_sensitivity
+                ),
+            )
+        )
+
+        self.config_entry.async_create_background_task(
+            self.hass,
+            assist_pipeline.async_pipeline_from_audio_stream(
+                self.hass,
+                context=Context(),
+                event_callback=self._event_callback,
+                audio_data=audio_data_instance,
                 start_stage=start_stage,
                 end_stage=end_stage,
-                tts_audio_output="wav",
                 pipeline_id=pipeline_id,
-                audio_settings=assist_pipeline.AudioSettings(
-                    noise_suppression_level=self.device.noise_suppression_level,
-                    auto_gain_dbfs=self.device.auto_gain,
-                    volume_multiplier=self.device.volume_multiplier,
-                    silence_seconds=VadSensitivity.to_seconds(
-                        self.device.vad_sensitivity
-                    ),
-                ),
                 device_id=self.device.device_id,
                 wake_word_phrase=wake_word_phrase,
                 conversation_id=self._conversation_id,
