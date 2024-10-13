@@ -48,6 +48,7 @@ def _lookup_domain(
     perm_lookup: PermissionLookup, domains_dict: SubCategoryDict, entity_id: str
 ) -> ValueType | None:
     """Look up entity permissions by domain."""
+    _ = perm_lookup
     return domains_dict.get(entity_id.partition(".")[0])
 
 
