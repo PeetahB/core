@@ -14,7 +14,6 @@ from homeassistant.components import media_source, stt, tts
 from homeassistant.components.assist_pipeline import (
     OPTION_PREFERRED,
     AudioSettings,
-    WakeWordSettings,
     PipelineEvent,
     PipelineEventType,
     PipelineStage,
@@ -33,14 +32,6 @@ from homeassistant.helpers.entity import EntityDescription
 
 from .const import AssistSatelliteEntityFeature
 from .errors import AssistSatelliteError, SatelliteBusyError
-
-@dataclass
-class AudioData:
-    stt_metadata: stt.SpeechMetadata
-    stt_stream: AsyncIterable[bytes]
-    tts_audio_output: str | dict[str, Any] | None = None
-    wake_word_settings: WakeWordSettings | None = None
-    audio_settings: AudioSettings | None = None
 
 _CONVERSATION_TIMEOUT_SEC: Final = 5 * 60  # 5 minutes
 
@@ -321,8 +312,13 @@ class AssistSatelliteEntity(entity.Entity):
         self._run_has_tts = False
 
         assert self.platform.config_entry is not None
-        audio_data_instance = AudioData(
-            stt_metadata=stt.SpeechMetadata(
+        self._pipeline_task = self.platform.config_entry.async_create_background_task(
+            self.hass,
+            async_pipeline_from_audio_stream(
+                self.hass,
+                context=self._context,
+                event_callback=self._internal_on_pipeline_event,
+                stt_metadata=stt.SpeechMetadata(
                     language="",  # set in async_pipeline_from_audio_stream
                     format=stt.AudioFormats.WAV,
                     codec=stt.AudioCodecs.PCM,
@@ -330,23 +326,15 @@ class AssistSatelliteEntity(entity.Entity):
                     sample_rate=stt.AudioSampleRates.SAMPLERATE_16000,
                     channel=stt.AudioChannels.CHANNEL_MONO,
                 ),
-            stt_stream=audio_stream,
-            tts_audio_output=self.tts_options,
-            audio_settings=AudioSettings(
-                    silence_seconds=self._resolve_vad_sensitivity()
-                ),
-        )
-        self._pipeline_task = self.platform.config_entry.async_create_background_task(
-            self.hass,
-            async_pipeline_from_audio_stream(
-                self.hass,
-                context=self._context,
-                event_callback=self._internal_on_pipeline_event,
-                audio_data=audio_data_instance,
+                stt_stream=audio_stream,
                 pipeline_id=self._resolve_pipeline(),
                 conversation_id=self._conversation_id,
                 device_id=device_id,
+                tts_audio_output=self.tts_options,
                 wake_word_phrase=wake_word_phrase,
+                audio_settings=AudioSettings(
+                    silence_seconds=self._resolve_vad_sensitivity()
+                ),
                 start_stage=start_stage,
                 end_stage=end_stage,
             ),

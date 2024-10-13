@@ -1,7 +1,6 @@
 """The Assist pipeline integration."""
 
 from __future__ import annotations
-from dataclasses import dataclass
 
 from collections.abc import AsyncIterable
 from typing import Any
@@ -92,23 +91,20 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     return True
 
-@dataclass
-class AudioData:
-    stt_metadata: stt.SpeechMetadata
-    stt_stream: AsyncIterable[bytes]
-    tts_audio_output: str | dict[str, Any] | None = None
-    wake_word_settings: WakeWordSettings | None = None
-    audio_settings: AudioSettings | None = None
 
 async def async_pipeline_from_audio_stream(
     hass: HomeAssistant,
     *,
     context: Context,
     event_callback: PipelineEventCallback,
-    audio_data: AudioData,
+    stt_metadata: stt.SpeechMetadata,
+    stt_stream: AsyncIterable[bytes],
     wake_word_phrase: str | None = None,
     pipeline_id: str | None = None,
     conversation_id: str | None = None,
+    tts_audio_output: str | dict[str, Any] | None = None,
+    wake_word_settings: WakeWordSettings | None = None,
+    audio_settings: AudioSettings | None = None,
     device_id: str | None = None,
     start_stage: PipelineStage = PipelineStage.STT,
     end_stage: PipelineStage = PipelineStage.TTS,
@@ -117,12 +113,6 @@ async def async_pipeline_from_audio_stream(
 
     Raises PipelineNotFound if no pipeline is found.
     """
-     # Access audio data properties from the audio_data object
-    stt_metadata = audio_data.stt_metadata
-    stt_stream = audio_data.stt_stream
-    tts_audio_output = audio_data.tts_audio_output
-    wake_word_settings = audio_data.wake_word_settings
-    audio_settings = audio_data.audio_settings or AudioSettings()
     pipeline_input = PipelineInput(
         conversation_id=conversation_id,
         device_id=device_id,
