@@ -60,66 +60,68 @@ class AlexaFlashBriefingView(http.HomeAssistantView):
         """Handle Alexa Flash Briefing request."""
         _LOGGER.debug("Received Alexa flash briefing request for: %s", briefing_id)
 
-        if request.query.get(API_PASSWORD) is None:
-            err = "No password provided for Alexa flash briefing: %s"
-            _LOGGER.error(err, briefing_id)
-            return b"", HTTPStatus.UNAUTHORIZED
+        # Check for the presence of API password
+        api_password = request.query.get(API_PASSWORD)
+        if api_password is None:
+            return self._unauthorized_response(
+                "No password provided for Alexa flash briefing: %s", briefing_id
+            )
 
-        if not hmac.compare_digest(
-            request.query[API_PASSWORD].encode("utf-8"),
+        # Validate the provided password
+        if not self._is_valid_password(api_password):
+            return self._unauthorized_response(
+                "Wrong password for Alexa flash briefing: %s", briefing_id
+            )
+
+        # Check if the briefing exists
+        briefing = self.flash_briefings.get(briefing_id)
+        if not isinstance(briefing, list):
+            return self._not_found_response(
+                "No configured Alexa flash briefing was found for: %s", briefing_id
+            )
+
+        # Generate and return the briefing response
+        response = [self._render_briefing_item(item) for item in briefing]
+        return self.json(response)
+
+    def _unauthorized_response(
+        self, error_msg: str, briefing_id: str
+    ) -> tuple[bytes, HTTPStatus]:
+        """Return a 401 Unauthorized error with logging."""
+        _LOGGER.error(error_msg, briefing_id)
+        return b"", HTTPStatus.UNAUTHORIZED
+
+    def _not_found_response(
+        self, error_msg: str, briefing_id: str
+    ) -> tuple[bytes, HTTPStatus]:
+        """Return a 404 Not Found error with logging."""
+        _LOGGER.error(error_msg, briefing_id)
+        return b"", HTTPStatus.NOT_FOUND
+
+    def _is_valid_password(self, password: str) -> bool:
+        """Validate the API password for the flash briefing."""
+        return hmac.compare_digest(
+            password.encode("utf-8"),
             self.flash_briefings[CONF_PASSWORD].encode("utf-8"),
-        ):
-            err = "Wrong password for Alexa flash briefing: %s"
-            _LOGGER.error(err, briefing_id)
-            return b"", HTTPStatus.UNAUTHORIZED
+        )
 
-        if not isinstance(self.flash_briefings.get(briefing_id), list):
-            err = "No configured Alexa flash briefing was found for: %s"
-            _LOGGER.error(err, briefing_id)
-            return b"", HTTPStatus.NOT_FOUND
+    def _render_briefing_item(self, item: dict) -> dict:
+        """Render a single briefing item."""
+        return {
+            ATTR_TITLE_TEXT: self._render_template(item, CONF_TITLE),
+            ATTR_MAIN_TEXT: self._render_template(item, CONF_TEXT),
+            ATTR_UID: item.get(CONF_UID) or str(uuid.uuid4()),
+            ATTR_STREAM_URL: self._render_template(item, CONF_AUDIO),
+            ATTR_REDIRECTION_URL: self._render_template(item, CONF_DISPLAY_URL),
+            ATTR_UPDATE_DATE: dt_util.utcnow().strftime(DATE_FORMAT),
+        }
 
-        briefing = []
+    def _render_template(self, item: dict, key: str) -> str | None:
+        """Render template if the item has a templated field, otherwise return its value."""
+        if item.get(key) is None:
+            return None
 
-        for item in self.flash_briefings.get(briefing_id, []):
-            output = {}
-            if item.get(CONF_TITLE) is not None:
-                if isinstance(item.get(CONF_TITLE), template.Template):
-                    output[ATTR_TITLE_TEXT] = item[CONF_TITLE].async_render(
-                        parse_result=False
-                    )
-                else:
-                    output[ATTR_TITLE_TEXT] = item.get(CONF_TITLE)
+        if isinstance(item.get(key), template.Template):
+            return item[key].async_render(parse_result=False)
 
-            if item.get(CONF_TEXT) is not None:
-                if isinstance(item.get(CONF_TEXT), template.Template):
-                    output[ATTR_MAIN_TEXT] = item[CONF_TEXT].async_render(
-                        parse_result=False
-                    )
-                else:
-                    output[ATTR_MAIN_TEXT] = item.get(CONF_TEXT)
-
-            if (uid := item.get(CONF_UID)) is None:
-                uid = str(uuid.uuid4())
-            output[ATTR_UID] = uid
-
-            if item.get(CONF_AUDIO) is not None:
-                if isinstance(item.get(CONF_AUDIO), template.Template):
-                    output[ATTR_STREAM_URL] = item[CONF_AUDIO].async_render(
-                        parse_result=False
-                    )
-                else:
-                    output[ATTR_STREAM_URL] = item.get(CONF_AUDIO)
-
-            if item.get(CONF_DISPLAY_URL) is not None:
-                if isinstance(item.get(CONF_DISPLAY_URL), template.Template):
-                    output[ATTR_REDIRECTION_URL] = item[CONF_DISPLAY_URL].async_render(
-                        parse_result=False
-                    )
-                else:
-                    output[ATTR_REDIRECTION_URL] = item.get(CONF_DISPLAY_URL)
-
-            output[ATTR_UPDATE_DATE] = dt_util.utcnow().strftime(DATE_FORMAT)
-
-            briefing.append(output)
-
-        return self.json(briefing)
+        return item.get(key)
