@@ -137,7 +137,7 @@ async def websocket_run(
     start_stage = PipelineStage(msg["start_stage"])
     end_stage = PipelineStage(msg["end_stage"])
 
-    input_args, handler_id, unregister_handler, wake_word_settings, audio_settings = await prepare_input_args(
+    input_args, handler_id, _, wake_word_settings, audio_settings = await prepare_input_args(
         msg, start_stage, pipeline, connection
     )
 
