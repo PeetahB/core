@@ -131,12 +131,7 @@ def _async_resolve_default_pipeline_settings(
     The default pipeline will use the homeassistant conversation agent and the
     default stt / tts engines if none are specified.
     """
-    conversation_language = "en"
-    pipeline_language = "en"
-    stt_engine = None
     stt_language = None
-    tts_engine = None
-    tts_language = None
     tts_voice = None
     wake_word_entity = None
     wake_word_id = None
