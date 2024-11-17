@@ -34,6 +34,7 @@ from .const import (
 )
 from .coordinator import OpenUvCoordinator
 from .entity import OpenUvEntity
+from .skintype_profiles import async_setup_skintype_profiles
 
 ATTR_MAX_UV_TIME = "time"
 
@@ -169,14 +170,15 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up a OpenUV sensor based on a config entry."""
-    coordinators: dict[str, OpenUvCoordinator] = hass.data[DOMAIN][entry.entry_id]
 
+    coordinators: dict[str, OpenUvCoordinator] = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         [
             OpenUvSensor(coordinators[DATA_UV], description)
             for description in SENSOR_DESCRIPTIONS
         ]
     )
+    await async_setup_skintype_profiles(hass, entry, async_add_entities)
 
 
 class OpenUvSensor(OpenUvEntity, SensorEntity):

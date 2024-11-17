@@ -1,0 +1,9 @@
+set_skintype_profile:
+  description: "Set or update a skin type profile for a user!"
+  fields:
+    username:
+      description: "Username for the profile"
+      example: "user1"
+    skin_type:
+      description: "Skin type value"
+      example: 1
