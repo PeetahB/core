@@ -1,9 +1,16 @@
 set_skintype_profile:
-  description: "Set or update a skin type profile for a user!"
+  description: "Set or update a skin type profile for a user."
   fields:
     username:
-      description: "Username for the profile"
+      description: "Username for the profile."
       example: "user1"
     skin_type:
-      description: "Skin type value"
+      description: "Skin type value (integer between 1 and 6)."
       example: 1
+
+delete_skintype_profile:
+  description: "Delete a skin type profile for a user."
+  fields:
+    username:
+      description: "Username of the profile to delete."
+      example: "example_user"

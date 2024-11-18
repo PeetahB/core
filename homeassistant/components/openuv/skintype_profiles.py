@@ -1,5 +1,7 @@
 """Support for OpenUV skin type profiles."""
 
+from typing import Any
+
 import voluptuous as vol
 
 from homeassistant.components.sensor import SensorEntity
@@ -9,16 +11,22 @@ from homeassistant.helpers.entity_component import async_update_entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.storage import Store
 
+from .button import AddSkinTypeButton
 from .const import DOMAIN
 
 STORAGE_KEY = f"{DOMAIN}_skintype_profiles"
 STORAGE_VERSION = 1
-
 # Service schema
 SET_PROFILE_SCHEMA = vol.Schema(
     {
         vol.Required("username"): str,
         vol.Required("skin_type"): int,
+    }
+)
+
+DELETE_PROFILE_SCHEMA = vol.Schema(
+    {
+        vol.Required("username"): str,
     }
 )
 
@@ -61,12 +69,43 @@ async def async_setup_skintype_profiles(
         # Update or create corresponding entities
         await async_add_or_update_entity(hass, username)
 
-    # Register the service
+    async def async_delete_skintype_profile(call: ServiceCall) -> None:
+        """Handle deleting a skin type profile."""
+        username = call.data["username"]
+
+        # Find and remove the profile
+        updated_profiles = [
+            profile
+            for profile in profiles["skintype_profiles"]
+            if profile["username"] != username
+        ]
+
+        if len(updated_profiles) == len(profiles["skintype_profiles"]):
+            # Profile not found, do nothing
+            return
+
+        # Update profiles
+        profiles["skintype_profiles"] = updated_profiles
+        await store.async_save(profiles)
+
+        # Remove the corresponding entity
+        entity_id = f"{DOMAIN}.skintype_{username}"
+        if entity_id in hass.states.async_entity_ids():
+            await hass.states.async_remove(entity_id)
+
+    # Register the services
     hass.services.async_register(
         DOMAIN,
         "set_skintype_profile",
         async_set_skintype_profile,
         schema=SET_PROFILE_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "delete_skintype_profile",
+        async_delete_skintype_profile,
+        schema=DELETE_PROFILE_SCHEMA,
     )
 
     # Initialize existing profiles as entities
@@ -112,7 +151,7 @@ class SkinTypeProfileEntity(SensorEntity):
         self._skin_type = skin_type
         self._store = store
         self._attr_unique_id = f"{DOMAIN}_skintype_profile_{username}"
-        self._attr_name = f"{username} Skin Type Profile"  # Name of the entity
+        self._attr_name = f"{username} Skin Type"  # Friendly name of the entity
 
     @property
     def state(self) -> int:
@@ -120,9 +159,25 @@ class SkinTypeProfileEntity(SensorEntity):
         return self._skin_type
 
     @property
+    def icon(self) -> str:
+        """Return the icon for the entity."""
+        return "mdi:face-recognition"
+
+    @property
     def extra_state_attributes(self) -> dict[str, str]:
         """Return additional attributes."""
         return {"username": self._username}
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information."""
+        return {
+            "identifiers": {(DOMAIN, "skintype_profiles")},
+            "name": "Skin Type Profiles",  # This will be the heading in the dashboard
+            "manufacturer": "OpenUV",
+            "sw_version": "1.0",
+            "entry_type": "service",
+        }
 
     async def async_update(self) -> None:
         """Update the entity state."""
