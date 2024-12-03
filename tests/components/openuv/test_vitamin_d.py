@@ -61,8 +61,6 @@ def test_sun_exposure_interval_is_none(vitamin_d_instance) -> None:
 
 def test_sun_exposure_time(vitamin_d_instance) -> None:
     """Checks correctness of sun exposure times."""
-    # go through each uv index
-    # go through each skin type
     for uv_label in UV_INDEX_LABEL_TRANSLATION:
         for skin_type in SKIN_TYPE_TRANSLATION:
             uv_label_translated = UV_INDEX_LABEL_TRANSLATION.get(uv_label)
