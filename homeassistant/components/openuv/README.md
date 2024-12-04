@@ -153,3 +153,10 @@ After pasting the YAML code, click Save to add the graph to your dashboard.
 The dashboard will now display the UV index graph with the color-coded thresholds applied.
 
 ---
+# Sun Exposure for daily Vitamin D intake:
+## Feature Description:
+
+Vitamin D intake sensor displays the sun exposure needed to reach the daily vitamin D intake. User’s skin type and the current UV index are used for the sun exposure fetching, making use of the skin type customization feature. 
+
+## Setup:
+If you want to make use of this feature, you need to have your skin type set (see Skin type feature for details). After that, the sensor is added automatically. 
