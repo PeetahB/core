@@ -197,7 +197,7 @@ This repository introduces a **Skin Type Customization Feature** for the Home As
 - After saving, check that the sensor `sensor.openuv_skin_type` reflects the selected **Skin Type**.
 - This ensures the safe exposure recommendations are now personalized for the selected Skin Type.
 
----
+
 
 
 
