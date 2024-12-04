@@ -153,6 +153,7 @@ After pasting the YAML code, click Save to add the graph to your dashboard.
 The dashboard will now display the UV index graph with the color-coded thresholds applied.
 
 ---
+ feature/docs-vitamin-d
 # Sun Exposure for daily Vitamin D intake:
 ## Feature Description:
 
@@ -160,3 +161,55 @@ Vitamin D intake sensor displays the sun exposure needed to reach the daily vita
 
 ## Setup:
 If you want to make use of this feature, you need to have your skin type set (see Skin type feature for details). After that, the sensor is added automatically. 
+=======
+
+# Skin Type Customization in Home Assistant
+
+This repository introduces a **Skin Type Customization Feature** for the Home Assistant OpenUV integration. With this feature, users can personalize their experience by integrating their skin type during the setup process, ensuring accurate safe exposure recommendations tailored to their skin sensitivity levels.
+
+## Key Features
+
+### 1. Skin Type Integration:
+- Users can select their skin type (e.g., Skin Type I–VI) during the initial setup of the OpenUV integration.
+- The selected skin type is displayed via a dedicated **skin type sensor**.
+
+### 2. Real-Time Safe Exposure Visibility:
+- The feature provides personalized guidance by dynamically calculating safe exposure times based on UV index and the selected skin type.
+- Tailored safe exposure recommendations enhance user safety and awareness.
+
+### 3. Editable Skin Type Configuration:
+- Users can refine or change their skin type settings through the integration’s **Options Flow**.
+- Setting the skin type to `None` disables personalized recommendations.
+
+---
+
+## Steps to Select Skin Type:
+
+### 1. Open the Home Assistant Dashboard
+- Log in to your Home Assistant instance.
+
+### 2. Install the Open UV Integration
+1. Navigate to **Settings > Devices & Services > Integrations** in Home Assistant.
+2. Search for **OpenUV** and follow the installation prompts:
+   - Enter your OpenUV API Key.
+   - Configure your location details (latitude, longitude).
+   - Select your Skin Type or leave it as `None`.
+
+### 3. Modify the Skin Type Setting
+- In the options dialog, locate the **Skin Type** dropdown menu.
+- Select **Skin Type** from the list (Skin Type I–VI or None).
+
+### 4. Save the Changes
+- Click **Submit** or **Save** to apply your changes.
+
+### 5. Verify the Skin Type Selection
+- After saving, check that the sensor `sensor.openuv_skin_type` reflects the selected **Skin Type**.
+- This ensures the safe exposure recommendations are now personalized for the selected Skin Type.
+
+
+
+
+
+
+
+
