@@ -153,6 +153,15 @@ After pasting the YAML code, click Save to add the graph to your dashboard.
 The dashboard will now display the UV index graph with the color-coded thresholds applied.
 
 ---
+ feature/docs-vitamin-d
+# Sun Exposure for daily Vitamin D intake:
+## Feature Description:
+
+Vitamin D intake sensor displays the sun exposure needed to reach the daily vitamin D intake. User’s skin type and the current UV index are used for the sun exposure fetching, making use of the skin type customization feature. 
+
+## Setup:
+If you want to make use of this feature, you need to have your skin type set (see Skin type feature for details). After that, the sensor is added automatically. 
+=======
 
 # Skin Type Customization in Home Assistant
 
@@ -196,6 +205,7 @@ This repository introduces a **Skin Type Customization Feature** for the Home As
 ### 5. Verify the Skin Type Selection
 - After saving, check that the sensor `sensor.openuv_skin_type` reflects the selected **Skin Type**.
 - This ensures the safe exposure recommendations are now personalized for the selected Skin Type.
+
 
 
 
