@@ -207,6 +207,16 @@ This repository introduces a **Skin Type Customization Feature** for the Home As
 - This ensures the safe exposure recommendations are now personalized for the selected Skin Type.
 
 
+---
+ feature/README-Sunscreen-Reminder
+# Sunscreen application reminder for uv index 3 or above:
+## Feature Description:
+
+User receives notification to apply sunscreen. The uv index must be 3 or above to receive sunscreen reminder.
+
+## Setup:
+If you want to make use of this feature, you need to turn sunscreen reminder on. After that you will start receiving sunscreen reminders. In order to stop receiving reminder, turn the sunscreen reminder off.
+=======
 
 
 
