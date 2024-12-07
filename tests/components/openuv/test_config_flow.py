@@ -95,14 +95,14 @@ async def test_options_flow(
         user_input={
             CONF_FROM_WINDOW: 3.5,
             CONF_TO_WINDOW: 2.0,
-            "skin_type": "None",
+            "skin_type": "Skin Type II",
         },
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert config_entry.options == {
         CONF_FROM_WINDOW: 3.5,
         CONF_TO_WINDOW: 2.0,
-        "skin_type": "None",
+        "skin_type": "Skin Type II",
     }
 
     # Subsequent schema uses previous input for suggested values:
@@ -115,7 +115,14 @@ async def test_options_flow(
     assert get_schema_marker(result["data_schema"], CONF_TO_WINDOW).description == {
         "suggested_value": 2.0
     }
-    assert get_schema_marker(result["data_schema"], "skin_type").default() == "None"
+    assert config_entry.options["skin_type"] == "Skin Type II"
+
+    # reset back to none
+    _result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"skin_type": "None"},
+    )
+    assert config_entry.options["skin_type"] == "None"
 
 
 async def test_step_reauth(
@@ -135,3 +142,25 @@ async def test_step_reauth(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert len(hass.config_entries.async_entries()) == 1
+
+
+async def test_skin_type_persistence_after_restart(
+    hass: HomeAssistant, config_entry, setup_config_entry
+) -> None:
+    """Test that skin_type is correctly persisted after a system restart."""
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    # Update the skin_type to "Skin Type III"
+    _result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"skin_type": "Skin Type III"},
+    )
+    assert config_entry.options["skin_type"] == "Skin Type III"
+
+    # Restart the system (this will reload the config entry)
+    await hass.async_block_till_done()
+
+    # Verify that the skin_type is still "Skin Type III"
+    assert config_entry.options["skin_type"] == "Skin Type III"

@@ -19,6 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_registry import EntityRegistry
 from homeassistant.util.dt import as_local, parse_datetime
 
 from .const import (
@@ -298,37 +299,70 @@ async def options_update_listener(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Handle options update for skin type changes."""
-
     skin_type = entry.options.get("skin_type", "None")
     coordinators = hass.data[DOMAIN][entry.entry_id]
     entity_registry = er.async_get(hass)
 
     if skin_type == "None":
-        for i in range(1, 7):
-            entity_id = f"sensor.openuv_skin_type_{i}_safe_exposure_time"
-            if not entity_registry.async_is_registered(entity_id):
-                sensordescription = get_safe_exposure_sensor(coordinators, i)
-                async_add_entities([sensordescription])
+        _add_all_sensors_if_missing(async_add_entities, entity_registry, coordinators)
     else:
-        roman_part = skin_type.split(" ")[-1]
-        selected_type = roman_to_int.get(roman_part)
+        _process_skin_type_option(
+            skin_type, async_add_entities, entity_registry, coordinators
+        )
 
-        if selected_type:
-            entity_id = f"sensor.openuv_skin_type_{selected_type}_safe_exposure_time"
-            if not entity_registry.async_is_registered(entity_id):
-                sensordescription = get_safe_exposure_sensor(
-                    coordinators, selected_type
-                )
-                async_add_entities([sensordescription])
 
-            # Remove all other safe exposure sensors
-            for i in range(1, 7):
-                if i != selected_type:
-                    other_entity_id = f"sensor.openuv_skin_type_{i}_safe_exposure_time"
-                    if entity_registry.async_is_registered(other_entity_id):
-                        entity_registry.async_remove(other_entity_id)
-        else:
-            _LOGGER.warning("Invalid skin type")
+def _add_all_sensors_if_missing(
+    async_add_entities: AddEntitiesCallback,
+    entity_registry: EntityRegistry,
+    coordinators: dict,
+) -> None:
+    """Add all safe exposure sensors if they are not registered."""
+    for i in range(1, 7):
+        entity_id = f"sensor.openuv_skin_type_{i}_safe_exposure_time"
+        if not entity_registry.async_is_registered(entity_id):
+            sensordescription = get_safe_exposure_sensor(coordinators, i)
+            async_add_entities([sensordescription])
+
+
+def _process_skin_type_option(
+    skin_type: str,
+    async_add_entities: AddEntitiesCallback,
+    entity_registry: EntityRegistry,
+    coordinators: dict,
+) -> None:
+    """Handle adding and removing sensors for a specific skin type."""
+    roman_part = skin_type.split(" ")[-1]
+    selected_type = roman_to_int.get(roman_part)
+
+    if selected_type:
+        _add_sensor_for_skin_type(
+            selected_type, async_add_entities, entity_registry, coordinators
+        )
+        _remove_other_sensors(selected_type, entity_registry)
+    else:
+        _LOGGER.warning("Invalid skin type")
+
+
+def _add_sensor_for_skin_type(
+    skin_type: int,
+    async_add_entities: AddEntitiesCallback,
+    entity_registry: EntityRegistry,
+    coordinators: dict,
+) -> None:
+    """Add a sensor for the given skin type if not already registered."""
+    entity_id = f"sensor.openuv_skin_type_{skin_type}_safe_exposure_time"
+    if not entity_registry.async_is_registered(entity_id):
+        sensordescription = get_safe_exposure_sensor(coordinators, skin_type)
+        async_add_entities([sensordescription])
+
+
+def _remove_other_sensors(selected_type: int, entity_registry: EntityRegistry) -> None:
+    """Remove all safe exposure sensors except for the selected skin type."""
+    for i in range(1, 7):
+        if i != selected_type:
+            other_entity_id = f"sensor.openuv_skin_type_{i}_safe_exposure_time"
+            if entity_registry.async_is_registered(other_entity_id):
+                entity_registry.async_remove(other_entity_id)
 
 
 def get_safe_exposure_sensor(
