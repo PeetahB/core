@@ -10,11 +10,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import SunscreenReminder
 from .const import SUNSCREEN_DOMAIN
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-    discovery_info=None,
 ) -> None:
     """Set up the Sunscreen Reminder switch."""
     reminder = hass.data.get(SUNSCREEN_DOMAIN)

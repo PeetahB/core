@@ -13,8 +13,9 @@ from .const import SUNSCREEN_DOMAIN
 LOCAL_TIMEZONE = "Europe/Stockholm"
 UV_SENSOR = "sensor.openuv_current_uv_index"
 UV_THRESHOLD = 3  # In real life should be 3 (For demo lower values)
-NOTIFICATION_INTERVAL_HOURS = 2  # Equal to 2 hours (For demo lower values e.g 0.02)
+NOTIFICATION_INTERVAL_HOURS = 2
 CHECK_INTERVAL_MINUTES = 0.5  # Frequency to check the UV index
+
 
 class SunscreenReminder:
     """Class to manage sunscreen reminders."""
@@ -47,24 +48,24 @@ class SunscreenReminder:
             return
 
         if state.state in (None, "unknown"):
-           return
+            return
 
         try:
             uv_index = float(state.state)
             self._handle_uv_index(uv_index)
         except ValueError:
             return
+
     def _handle_uv_index(self, uv_index):
         now = datetime.now()
-        if uv_index >= UV_THRESHOLD:
-            if (
-                self.last_notification_time is None
-                or now - self.last_notification_time
-                >= timedelta(hours=NOTIFICATION_INTERVAL_HOURS)
-            ):
-                self.last_notification_time = now
-                self.hass.async_create_task(self._send_notification())
-            
+        if uv_index >= UV_THRESHOLD and (
+            self.last_notification_time is None
+            or now - self.last_notification_time
+            >= timedelta(hours=NOTIFICATION_INTERVAL_HOURS)
+        ):
+            self.last_notification_time = now
+            self.hass.async_create_task(self._send_notification())
+
     async def _send_notification(self):
         """Asynchronously send a sunscreen reminder notification."""
         now = datetime.now(ZoneInfo(LOCAL_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S %Z")
