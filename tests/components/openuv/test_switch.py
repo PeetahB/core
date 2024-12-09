@@ -35,6 +35,7 @@ def switch_entity(hass_instance, sunscreen_reminder):
     return switch
 
 
+@pytest.mark.asyncio
 async def test_switch_initial_state(switch_entity: SwitchEntity) -> None:
     """Test the initial state of the switch."""
     assert not switch_entity.is_on
@@ -43,6 +44,7 @@ async def test_switch_initial_state(switch_entity: SwitchEntity) -> None:
     assert switch_entity.icon == "mdi:emoticon-cool-outline"
 
 
+@pytest.mark.asyncio
 async def test_turn_on_switch(
     switch_entity: SwitchEntity, sunscreen_reminder: SunscreenReminder
 ) -> None:
@@ -60,6 +62,7 @@ async def test_turn_on_switch(
     switch_entity.async_write_ha_state.assert_called_once()
 
 
+@pytest.mark.asyncio
 async def test_turn_off_switch(
     switch_entity: SwitchEntity, sunscreen_reminder: SunscreenReminder
 ) -> None:
