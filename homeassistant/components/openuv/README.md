@@ -207,6 +207,17 @@ This repository introduces a **Skin Type Customization Feature** for the Home As
 - This ensures the safe exposure recommendations are now personalized for the selected Skin Type.
 
 
+---
+ feature/README-Sunscreen-Reminder
+# Sunscreen application reminder for uv index 3 or above:
+## Feature Description:
+
+User receives notification to apply sunscreen. The uv index must be 3 or above to receive sunscreen reminder. Reminder to apply sunscreen is sent every two hours in order to fully protect the skin. 
+
+## Setup:
+If you want to make use of this feature, you need to turn sunscreen reminder on. After that you will start receiving sunscreen reminders. In order to stop receiving reminder, turn the sunscreen reminder off.
+Note: If the service is deleted, Remember to restart Home Assistant before adding new service
+=======
 
 
 
