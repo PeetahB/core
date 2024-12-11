@@ -20,7 +20,7 @@ async def async_setup_entry(
     reminder = hass.data.get(SUNSCREEN_DOMAIN)
     if not isinstance(reminder, SunscreenReminder):
         return
-
+    _ = config
     async_add_entities([SunscreenReminderSwitch(reminder)])
 
 
