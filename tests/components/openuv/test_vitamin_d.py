@@ -45,7 +45,20 @@ def test_initialize_vitamin_d_sensor(vitamin_d_instance) -> None:
 
 def test_sun_exposure_skin_type_none(vitamin_d_instance) -> None:
     """Test for unexisting skin type."""
-    skin_type = "Non existing skin type"
+    # Mock necessary objects
+    entry = MagicMock()
+    entry.data = {
+        "skin_type": "None",  # Skin type is None, so all safe exposure sensors should be added
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+    }
+    entry.options = {"skin_type": "None"}  # Skin type explicitly set to None
+    entry.entry_id = "test_entry"
+    skin_type = (
+        entry.options["skin_type"]
+        if entry.options["skin_type"] is not None
+        else entry.data["skin_type"]
+    )
     uv_index = 0
     assert (
         vitamin_d_instance.get_sun_exposure(skin_type, uv_index) == "Set your skin type"
@@ -54,7 +67,20 @@ def test_sun_exposure_skin_type_none(vitamin_d_instance) -> None:
 
 def test_sun_exposure_interval_is_none(vitamin_d_instance) -> None:
     """Test for undefined sun exposure."""
-    skin_type = "Skin Type VI"
+    # Mock necessary objects
+    entry = MagicMock()
+    entry.data = {
+        "skin_type": "None",  # Skin type is None, so all safe exposure sensors should be added
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+    }
+    entry.options = {"skin_type": "Skin Type VI"}  # Skin type explicitly set to None
+    entry.entry_id = "test_entry"
+    skin_type = (
+        entry.options["skin_type"]
+        if entry.options["skin_type"] is not None
+        else entry.data["skin_type"]
+    )
     uv_index = 0
     assert vitamin_d_instance.get_sun_exposure(skin_type, uv_index) == "-"
 
