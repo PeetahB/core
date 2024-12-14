@@ -153,7 +153,7 @@ After pasting the YAML code, click Save to add the graph to your dashboard.
 The dashboard will now display the UV index graph with the color-coded thresholds applied.
 
 ---
- feature/docs-vitamin-d
+
 # Sun Exposure for daily Vitamin D intake:
 ## Feature Description:
 
@@ -208,7 +208,7 @@ This repository introduces a **Skin Type Customization Feature** for the Home As
 
 
 ---
- feature/README-Sunscreen-Reminder
+
 # Sunscreen application reminder for uv index 3 or above:
 ## Feature Description:
 
